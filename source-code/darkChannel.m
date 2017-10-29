@@ -15,10 +15,11 @@
 
 % OUTPUT:
 % J is the obtained clear image after visibility restoration
-% tmap is the raw transmission map 
-% tmap_ref is the refined transmission map .
+% J是可见度恢复后获得的清晰图像
+% tmap is the raw transmission map 原始透射图
+% tmap_ref is the refined transmission map .精细化透射图
 function [ J,tmap,tmap_ref ] = darkChannel( I,px,w)
- tic;
+ tic; % tic用来保存当前时间，而后使用toc来记录程序完成时间
 if (nargin < 3)
    w = 0.95;        % by default, constant parameter w is set to 0.95.
 end
@@ -46,10 +47,14 @@ end
 
 
 % Pick the top 0.1% brightest pixels in the dark channel.
+% 选择暗通道中最亮的0.1%像素
+% 图像数据类型转为double
 Im=im2double(I);
-%% My change
-Im = L0Smoothing(Im,0.003);
+
 %%
+% dimr 高
+% dimc 宽
+% col--维数（如果是灰度图，col为1，如果是彩色图，col为3，分别代表R，G，B分量）
 [dimr,dimc,col]=size(I);
 dx=floor(px/2);
 % Initial three matrices
@@ -62,6 +67,10 @@ tmap_ref=zeros(dimr,dimc);
         A_g=0;
         A_b=0;
         %% Estimate the atmospheric light (color)
+    % M = min(A,[],dim) returns the smallest elements along dimension dim. 
+    % For example, if A is a matrix,
+    % then min(A,[],2) is a column vector containing the minimum value of each row.
+    % 暗通道
         J_darkchannel=min(Im,[],3);
         for i=(1:dimr)
             for j=(1:dimc)
@@ -84,6 +93,7 @@ tmap_ref=zeros(dimr,dimc);
         end
         J_darkchannel=J_darktemp;
                %get the 0.1% most brightest pixels in the darkchannel
+               % 选择暗通道中最亮的0.1%像素
                 lmt = quantile(J_darkchannel(:),[.999]);      
                 [rind,cind]=find(J_darkchannel>=lmt);
                 [enum,~]=size(rind);
